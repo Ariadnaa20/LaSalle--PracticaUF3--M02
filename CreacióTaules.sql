@@ -1,6 +1,6 @@
 --Pol Hernàndez, Xavier Moreno, Ariadna Pascual
 
---PAS 1:
+--PAS 1: CÀRREGA DE FITXERS
 
 --1. Plantejament de l'estructura de la taula
 
@@ -51,8 +51,24 @@ DO
 
 DELIMITER ;
 
+-- Opcional automatitzar amb cron (PAS 5 )
 
---PAS 2
+#!/bin/bash
+
+# Definir la ruta del fitxer syslog
+file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
+
+# Comanda per carregar el fitxer syslog a la base de dades
+-- mysql -u elon -elon nom_practica -e "LOAD DATA INFILE '${file_path}' INTO TABLE CarregarLogs FIELDS TERMINATED BY ';' ENCLOSED BY '\"' LINES TERMINATED BY '\n';"
+
+# en el crontab -e posarem la seguent linea al final del arziu
+0 1 * * * /home/elon/scriptBD.sh
+
+
+
+
+
+--PAS 2: TRACTAMENT I TAULES DE CONTROL
 
 -- 2.1 Creació de taules de control 
 
@@ -83,6 +99,51 @@ INSERT INTO RegistreFitxers (nom_fitxer, data_càrrega) VALUES (@fitxer_dia_ante
 -- Inserció del nombre de files inserides per al fitxer del dia anterior
 SET @num_files_inserides = (SELECT COUNT(*) FROM CarregarLogs WHERE Fecha = DATE(NOW() - INTERVAL 1 DAY));
 INSERT INTO NombreFilesInserides (nom_fitxer, num_files_inserides, data_càrrega) VALUES (@fitxer_dia_anterior, @num_files_inserides, NOW());
+
+-- Afegir la columna addicional "es_cap_de_setmana"
+ALTER TABLE CarregarLogs
+ADD COLUMN es_cap_de_setmana BOOLEAN;
+
+-- Actualitzar els valors de la columna "es_cap_de_setmana"
+UPDATE CarregarLogs
+SET es_cap_de_setmana = CASE
+                            WHEN DAYOFWEEK(Fecha) IN (1,7) THEN TRUE
+                            ELSE FALSE
+                        END;
+
+
+
+
+--PAS 4  Creació de la taula Màster dels processos
+
+--Creació taula màster dels processos
+
+DROP TABLE IF EXISTS MasterTable;
+
+CREATE TABLE IF NOT EXISTS MasterTable (
+  Id INT NOT NULL AUTO_INCREMENT,
+  NomProces VARCHAR(100),
+  Descripcio VARCHAR(255),
+  PRIMARY KEY(Id)
+);
+
+--Modificació de la taula de logs: 
+
+-- Afegir una columna per fer referència a la taula màster dels processos
+ALTER TABLE CarregarLogs
+ADD COLUMN ProcessId INT,
+ADD CONSTRAINT fk_process_id FOREIGN KEY (ProcessId) REFERENCES MasterProcess(Id);
+
+-- Inserció de dades a la taula màster dels processos
+
+-- Exemple d'inserció de dades a la taula màster dels processos
+INSERT INTO MasterProcess (NomProcés, Descripció) VALUES
+    ('Systemd[1]', 'systemd is a system and service manager'),
+    ('rsyslogd', 'The rsyslog daemon is an enhanced syslogd');
+
+
+
+--PAS 5:  Manteniment de la taula Màster dels processos
 
 
 
