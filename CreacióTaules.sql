@@ -1,5 +1,7 @@
 --Pol Hernàndez, Xavier Moreno, Ariadna Pascual
 
+--PAS 1:
+
 --1. Plantejament de l'estructura de la taula
 
 /* Hem decidit estructurar la taula d'aquesta manera per diverses raons. En primer lloc, hem optat per utilitzar una clau primària autoincremental per a la columna id per proporcionar una identificació única per a cada registre de log. Això facilita la gestió de les dades i les operacions de consulta.
@@ -48,3 +50,39 @@ DO
     END &&
 
 DELIMITER ;
+
+
+--PAS 2
+
+-- 2.1 Creació de taules de control 
+
+-- Taula per al registre dels fitxers carregats cada dia
+CREATE TABLE IF NOT EXISTS RegistreFitxers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_fitxer VARCHAR(255),
+    data_càrrega DATETIME
+);
+
+-- Taula per al registre del nombre de files inserides per cada fitxer
+CREATE TABLE IF NOT EXISTS NombreFilesInserides (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_fitxer VARCHAR(255),
+    num_files_inserides INT,
+    data_càrrega DATETIME
+);
+
+
+-- 2.2 Procés de tractament dels fitxers syslog 
+
+-- Obtenció del fitxer del dia anterior
+SET @fitxer_dia_anterior = CONCAT('/home/elon/syslog_', YEAR(NOW() - INTERVAL 1 DAY), '-', LPAD(MONTH(NOW() - INTERVAL 1 DAY), 2, '0'), '-', LPAD(DAY(NOW() - INTERVAL 1 DAY), 2, '0'));
+
+-- Inserció del registre del fitxer carregat cada dia
+INSERT INTO RegistreFitxers (nom_fitxer, data_càrrega) VALUES (@fitxer_dia_anterior, NOW());
+
+-- Inserció del nombre de files inserides per al fitxer del dia anterior
+SET @num_files_inserides = (SELECT COUNT(*) FROM CarregarLogs WHERE Fecha = DATE(NOW() - INTERVAL 1 DAY));
+INSERT INTO NombreFilesInserides (nom_fitxer, num_files_inserides, data_càrrega) VALUES (@fitxer_dia_anterior, @num_files_inserides, NOW());
+
+
+
