@@ -2,12 +2,27 @@
 
 --PAS 3: EXTRACCIÓ 
 
+DELIMITER //
+
+CREATE PROCEDURE ExportarDadesControl()
+BEGIN
+    -- Exportació del registre dels fitxers carregats
+    SELECT * INTO OUTFILE '/ruta/registre_fitxers.csv'
+    FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    FROM RegistreFitxers;
+
+    -- Exportació del nombre de files inserides per cada fitxer
+    SELECT * INTO OUTFILE '/ruta/nombre_files_inserides.csv'
+    FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    FROM NombreFilesInserides;
+END //
+
+DELIMITER ;
 
 
-
-
-
-
+CALL ExportarDadesControl();
 
 
 -- PAS 7 : BACK UP DE LA BBDD 

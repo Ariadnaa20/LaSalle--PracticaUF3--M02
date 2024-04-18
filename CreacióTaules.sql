@@ -145,7 +145,7 @@ INSERT INTO MasterProcess (NomProcés, Descripció) VALUES
 
 --PAS 5:  Manteniment de la taula Màster dels processos
 
-DELIMITER //
+DELIMITER $$
 
 CREATE PROCEDURE MantenimentTaulaMasterProcess()
 BEGIN
@@ -169,10 +169,20 @@ BEGIN
     -- Mostrar missatges de correcció
     SELECT 'S\'han afegit nous processos a la taula màster.',
            'S\'han corregit els processos amb noms en majúscules.',
-           'S\'han corregit les dades nules en la taula màster.';
-END //
+           'S\'han corregit les dades nules en la taula màster.';'
+END $$
 
 DELIMITER ;
+
+
+-- PAS 9: Pas 8: Nous usuaris
+
+CREATE USER 'usuari1'@'localhost' IDENTIFIED BY '71420';
+GRANT SELECT ON DBPractica.* TO 'usuari1'@'localhost';
+
+
+
+
 
 
 
