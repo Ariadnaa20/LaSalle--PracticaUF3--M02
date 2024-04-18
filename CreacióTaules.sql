@@ -145,5 +145,35 @@ INSERT INTO MasterProcess (NomProcés, Descripció) VALUES
 
 --PAS 5:  Manteniment de la taula Màster dels processos
 
+DELIMITER //
+
+CREATE PROCEDURE MantenimentTaulaMasterProcess()
+BEGIN
+    -- Afegir nous processos que no estiguin a la taula màster
+    INSERT INTO MasterProcess (NomProcés, Descripció)
+    SELECT DISTINCT LOWER(NomProcés), Descripció
+    FROM CarregarLogs
+    WHERE NomProcés NOT IN (SELECT NomProcés FROM MasterProcess);
+
+    -- Validar que el NomProcés i la Descripció no siguin nuls
+    UPDATE MasterProcess
+    SET NomProcés = IFNULL(NomProcés, CONCAT('Valor_Null_', Id)),
+        Descripció = IFNULL(Descripció, CONCAT('Valor_Null_', Id))
+    WHERE NomProcés IS NULL OR Descripció IS NULL;
+
+    -- Validar que el NomProcés sempre estigui en minúscules
+    UPDATE MasterProcess
+    SET NomProcés = LOWER(NomProcés)
+    WHERE NomProcés <> LOWER(NomProcés);
+
+    -- Mostrar missatges de correcció
+    SELECT 'S\'han afegit nous processos a la taula màster.',
+           'S\'han corregit els processos amb noms en majúscules.',
+           'S\'han corregit les dades nules en la taula màster.';
+END //
+
+DELIMITER ;
+
+
 
 
