@@ -105,9 +105,11 @@ ALTER TABLE CarregarLogs
 ADD COLUMN es_cap_de_setmana BOOLEAN;
 
 -- Actualitzar els valors de la columna "es_cap_de_setmana"
-UPDATE CarregarLogs SET es_cap_de_setmana = CASE  WHEN DAYOFWEEK(Fecha) IN (1,7) THEN TRUE ELSE FALSE END;
-
-
+UPDATE CarregarLogs SET es_cap_de_setmana = 
+CASE  
+    WHEN DAYOFWEEK(Fecha) IN (1,7)
+    THEN TRUE
+    ELSE FALSE END;
 
 --PAS 4  Creació de la taula Màster dels processos
 
