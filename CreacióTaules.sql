@@ -2,7 +2,7 @@
 
 --PAS 1: CÀRREGA DE FITXERS
 
---1. Plantejament de l'estructura de la taula
+--1.1 Plantejament de l'estructura de la taula
 
 /* Hem decidit estructurar la taula d'aquesta manera per diverses raons. En primer lloc, hem optat per utilitzar una clau primària autoincremental per a la columna id per proporcionar una identificació única per a cada registre de log. Això facilita la gestió de les dades i les operacions de consulta.
 
@@ -13,7 +13,7 @@ Quant a les columnes Sistema, Origen i Mensaje, les hem seleccionades per reflec
 Finalment, hem triat utilitzar el tipus de dada TEXT per a la columna Mensaje per acomodar missatges de log de longitud variable. Això ens permet emmagatzemar missatges de log de qualsevol mida sense preocupar-nos per restriccions de longitud.*/
 
 
---2. Taula que rebrà les dades del fitxer
+--1.2 Taula que rebrà les dades del fitxer
 
 USE DBPractica;
 
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS CarregarLogs (
 
 
 
---3. Codi encarregat de carregar aquest fitxer
+--1.3 Codi encarregat de carregar aquest fitxer
 
 DELIMITER &&
 
@@ -51,7 +51,8 @@ DO
 
 DELIMITER ;
 
--- Opcional automatitzar amb cron (PAS 5 )
+-- Opcional automatitzar amb cron (PAS 5 ) pero a la secció d'events en aquesta carpeta podem trobar el event corresponent 
+--El script seria el següent 
 
 #!/bin/bash
 
@@ -63,7 +64,6 @@ file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
 
 # en el crontab -e posarem la seguent linea al final del arziu
 0 1 * * * /home/elon/scriptBD.sh
-
 
 
 
@@ -105,12 +105,7 @@ ALTER TABLE CarregarLogs
 ADD COLUMN es_cap_de_setmana BOOLEAN;
 
 -- Actualitzar els valors de la columna "es_cap_de_setmana"
-UPDATE CarregarLogs
-SET es_cap_de_setmana = CASE
-                            WHEN DAYOFWEEK(Fecha) IN (1,7) THEN TRUE
-                            ELSE FALSE
-                        END;
-
+UPDATE CarregarLogs SET es_cap_de_setmana = CASE  WHEN DAYOFWEEK(Fecha) IN (1,7) THEN TRUE ELSE FALSE END;
 
 
 
@@ -179,11 +174,4 @@ DELIMITER ;
 
 CREATE USER 'usuari1'@'localhost' IDENTIFIED BY '71420';
 GRANT SELECT ON DBPractica.* TO 'usuari1'@'localhost';
-
-
-
-
-
-
-
 
