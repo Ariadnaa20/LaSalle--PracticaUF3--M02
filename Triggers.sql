@@ -1,5 +1,7 @@
 -- Pol Hernàndez, Xavier Moreno, Ariadna Pascual
 
+--PAS 6 Triggers de control
+
 --Creació taula de control
 CREATE TABLE IF NOT EXISTS ControlCanvis (
     id INT AUTO_INCREMENT PRIMARY KEY,
