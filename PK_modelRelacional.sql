@@ -1,3 +1,5 @@
+-- model relacional, tambe està el model relacional en png 
+
 -- Creación de la tabla CarregarLogs
 CREATE TABLE CarregarLogs (
     id INT AUTO_INCREMENT,
@@ -48,25 +50,13 @@ CREATE TABLE ControlCanvis (
     FOREIGN KEY (carregar_logs_id) REFERENCES CarregarLogs(id)
 );
 
--- Agregar claves foráneas a la tabla CarregarLogs
-ALTER TABLE CarregarLogs
-ADD CONSTRAINT fk_registre_fitxers_nom_fitxer
-FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
-ADD CONSTRAINT fk_nombre_files_inserides_nom_fitxer
-FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer),
-ADD CONSTRAINT fk_master_table_process_id
-FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id);
 
 
 -- Afegir FK'S a la taula de CarregarLogs
 
-ALTER TABLE CarregarLogs
-ADD CONSTRAINT fk_registre_fitxers_nom_fitxer
-FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
-ADD CONSTRAINT fk_nombre_files_inserides_nom_fitxer
-FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer),
-ADD CONSTRAINT fk_master_table_process_id
-FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id);
+ALTER TABLE CarregarLogs ADD CONSTRAINT fk_registre_fitxers_nom_fitxer FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
+ADD CONSTRAINT fk_nombre_files_inserides_nom_fitxer FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer), 
+ADD CONSTRAINT fk_master_table_process_id FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id);
 
 
 

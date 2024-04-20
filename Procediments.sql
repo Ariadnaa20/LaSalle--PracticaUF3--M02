@@ -2,8 +2,9 @@
 
 --PAS 3: EXTRACCIÓ 
 
-DELIMITER //
+DELIMITER $$
 
+DROP PROCEDURE IF EXISTS ExportarDadesControl $$
 CREATE PROCEDURE ExportarDadesControl()
 BEGIN
     -- Exportació del registre dels fitxers carregats
@@ -17,7 +18,7 @@ BEGIN
     FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
     FROM NombreFilesInserides;
-END //
+END $$
 
 DELIMITER ;
 
@@ -28,6 +29,7 @@ CALL ExportarDadesControl();
 -- PAS 7 : BACK UP DE LA BBDD 
 DELIMITER $$
 
+DROP PROCEDURE IF EXISTS RealitzarBackup $$
 CREATE PROCEDURE RealitzarBackup()
 BEGIN
     DECLARE nom_taula VARCHAR(255);
