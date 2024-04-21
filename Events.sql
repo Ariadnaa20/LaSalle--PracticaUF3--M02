@@ -38,14 +38,15 @@ BEGIN
     DECLARE current_date DATE;
     SET current_date = CURDATE();
     
-    IF current_date < '2024-07-01' THEN
-        CALL RealitzarCopiaSeguretat();
-    ELSE
-        DROP EVENT IF EXISTS Backup_Event;
+    IF current_date >= '2024-07-01' THEN
+        LEAVE; -- Salir del evento sin realizar ninguna acción
     END IF;
+    
+    CALL RealitzarCopiaSeguretat();
 END$$
 
 DELIMITER ;
+
 
 
 

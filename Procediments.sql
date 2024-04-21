@@ -26,10 +26,6 @@ DELIMITER ;
 CALL ExportarDadesControl(); -- no te paràmetres
 
 
---PAS 5: Manteniment de la taula Màster dels processos
-
-
-
 -- PAS 7 : BACK UP DE LA BBDD 
 DELIMITER $$
 
