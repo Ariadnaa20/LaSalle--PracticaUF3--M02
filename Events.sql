@@ -1,6 +1,7 @@
 -- Pol Hernàndez, Xavier Moreno, Ariadna Pascual
 
-SET GLOBAL event_secheuduler= 1;
+SET GLOBAL event_scheduler = ON;
+
 
 --Event PAS1_3  
 DELIMITER $$
