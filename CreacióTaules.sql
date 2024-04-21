@@ -104,19 +104,21 @@ file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
 
 -- 2.1 Creació de taules de control 
 
--- Taula per al registre dels fitxers carregats cada dia
-CREATE TABLE IF NOT EXISTS RegistreFitxers (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+
+CREATE TABLE RegistreFitxers (
+    id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
-    data_carrega DATETIME
+    data_carrega DATETIME,
+    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
 );
 
--- Taula per al registre del nombre de files inserides per cada fitxer
-CREATE TABLE IF NOT EXISTS NombreFilesInserides (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+-- Creación de la tabla NombreFilesInserides
+CREATE TABLE NombreFilesInserides (
+    id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
     num_files_inserides INT,
-    data_carrega DATETIME
+    data_carrega DATETIME,
+    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
 );
 
 

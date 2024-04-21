@@ -1,6 +1,8 @@
+--Pol Hernàndez, Xavier Moreno, Ariadna Pascual 
+
 -- model relacional, tambe està el model relacional en png 
 
--- Creación de la tabla CarregarLogs
+
 CREATE TABLE CarregarLogs (
     id INT AUTO_INCREMENT,
     Fecha DATE,
@@ -18,12 +20,12 @@ CREATE TABLE CarregarLogs (
 );
 
 
--- Creación de la tabla RegistreFitxers
+
 CREATE TABLE RegistreFitxers (
     id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
-    data_càrrega DATETIME,
-    PRIMARY KEY (id)
+    data_carrega DATETIME,
+    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
 );
 
 -- Creación de la tabla NombreFilesInserides
@@ -31,11 +33,10 @@ CREATE TABLE NombreFilesInserides (
     id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
     num_files_inserides INT,
-    data_càrrega DATETIME,
-    PRIMARY KEY (id)
+    data_carrega DATETIME,
+    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
 );
 
--- Creación de la tabla MasterTable
 CREATE TABLE MasterTable (
     Id INT AUTO_INCREMENT,
     NomProces VARCHAR(100),
@@ -43,7 +44,7 @@ CREATE TABLE MasterTable (
     PRIMARY KEY (Id)
 );
 
--- Creación de la tabla ControlCanvis
+
 CREATE TABLE ControlCanvis (
     id INT AUTO_INCREMENT PRIMARY KEY,
     valor_vell TEXT,
