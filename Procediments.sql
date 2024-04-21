@@ -1,4 +1,4 @@
--- Pol hernàndez, Xavier Moreno, Ariadna Pascual 
+-- Pol Hernàndez, Xavier Moreno, Ariadna Pascual 
 
 --PAS 3: EXTRACCIÓ 
 
@@ -8,13 +8,13 @@ DROP PROCEDURE IF EXISTS ExportarDadesControl $$
 CREATE PROCEDURE ExportarDadesControl()
 BEGIN
     -- Exportació del registre dels fitxers carregats
-    SELECT * INTO OUTFILE '/ruta/registre_fitxers.csv'
+    SELECT * INTO OUTFILE '/home/elon/registre_fitxers.csv'
     FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
     FROM RegistreFitxers;
 
     -- Exportació del nombre de files inserides per cada fitxer
-    SELECT * INTO OUTFILE '/ruta/nombre_files_inserides.csv'
+    SELECT * INTO OUTFILE '/home/elon/nombre_files_inserides.csv'
     FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
     FROM NombreFilesInserides;
@@ -23,47 +23,48 @@ END $$
 DELIMITER ;
 
 
-CALL ExportarDadesControl();
+CALL ExportarDadesControl(); -- no te paràmetres
+
+
+--PAS 5: Manteniment de la taula Màster dels processos
+
 
 
 -- PAS 7 : BACK UP DE LA BBDD 
 DELIMITER $$
 
-DROP PROCEDURE IF EXISTS RealitzarBackup $$
-CREATE PROCEDURE RealitzarBackup()
+CREATE PROCEDURE RealitzarCopiaSeguretat()
 BEGIN
-    DECLARE nom_taula VARCHAR(255);
-    DECLARE data_actual VARCHAR(10);
     DECLARE done INT DEFAULT FALSE;
-    DECLARE backup_cursor CURSOR FOR SELECT table_name FROM information_schema.tables WHERE table_schema = 'DBPractica'; -- Nom de la nostra bbdd
-    
-    -- Obtenir la data actual en el format YYYYMMDD
-    SET data_actual = DATE_FORMAT(NOW(), '%Y%m%d');
-    
-    -- Obrir el cursor
-    OPEN backup_cursor;
+    DECLARE tableName VARCHAR(255);
+    DECLARE currentDate VARCHAR(10);
+    DECLARE cur1 CURSOR FOR SELECT table_name FROM information_schema.tables WHERE table_schema = 'DBPractica' AND table_type = 'BASE TABLE';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
-    -- Recórrer les taules i fer còpies de seguretat
-    backup_loop: LOOP
-        FETCH backup_cursor INTO nom_taula;
+    SET currentDate = DATE_FORMAT(NOW(), '%Y%m%d');
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur1 INTO tableName;
         IF done THEN
-            LEAVE backup_loop;
+            LEAVE read_loop;
         END IF;
 
-        SET @query = CONCAT('CREATE TABLE IF NOT EXISTS ', nom_taula, '_', data_actual, ' LIKE ', nom_taula);
-        PREPARE stmt FROM @query;
+        SET @backupTableName = CONCAT('backup_', tableName, '_', currentDate);
+        SET @sql = CONCAT('CREATE TABLE ', @backupTableName, ' LIKE DBPractica.', tableName);
+        PREPARE stmt FROM @sql;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
 
-        SET @query = CONCAT('INSERT INTO ', nom_taula, '_', data_actual, ' SELECT * FROM ', nom_taula);
-        PREPARE stmt FROM @query;
+        SET @sql = CONCAT('INSERT INTO ', @backupTableName, ' SELECT * FROM DBPractica.', tableName);
+        PREPARE stmt FROM @sql;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
-
     END LOOP;
 
-    -- Tancar el cursor
-    CLOSE backup_cursor;
-END$$
+    CLOSE cur1;
+END $$
 
 DELIMITER ;
+

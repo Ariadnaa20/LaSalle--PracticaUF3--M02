@@ -4,7 +4,8 @@
 
 --1.1 Plantejament de l'estructura de la taula
 
-/* Hem decidit estructurar la taula d'aquesta manera per diverses raons. En primer lloc, hem optat per utilitzar una clau primària autoincremental per a la columna id per proporcionar una identificació única per a cada registre de log. Això facilita la gestió de les dades i les operacions de consulta.
+/* 
+Seguint el fitxer proporcionat que es idèntic al nostre de la maquina elon (captura al pdf proporcionat), hem decidit estructurar la taula d'aquesta manera per diverses raons. En primer lloc, hem optat per utilitzar una clau primària autoincremental per a la columna id per proporcionar una identificació única per a cada registre de log. Això facilita la gestió de les dades i les operacions de consulta.
 
 En segon lloc, hem separar la data i l'hora en columnes independents (Fecha i Hora) perquè ens permet gestionar de manera més flexible les dades i facilita les consultes que necessiten filtrar per data, hora o intervals de temps específics tal com vem fer a Sistemes.
 
@@ -15,7 +16,7 @@ Finalment, hem triat utilitzar el tipus de dada TEXT per a la columna Mensaje pe
 
 --1.2 Taula que rebrà les dades del fitxer
 
-USE DBPractica;
+USE DBPractica;  -- la nostra base de dades 
 
 DROP TABLE IF EXISTS CarregarLogs;
 
@@ -29,37 +30,68 @@ CREATE TABLE IF NOT EXISTS CarregarLogs (
     PRIMARY KEY (id)
 );
 
+--La taula al final de la practia tindrà aquest format 
+CREATE TABLE CarregarLogs (
+    id INT AUTO_INCREMENT,
+    Fecha DATE,
+    Hora TIME,
+    Sistema VARCHAR(50),
+    Origen VARCHAR(50),
+    Mensaje VARCHAR(255),
+    ProcessId INT,
+    es_cap_de_setmana BOOLEAN,
+    nom_fitxer VARCHAR(255),  
+    PRIMARY KEY (id),
+    FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id),
+    FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
+    FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer)
+);
+
 
 
 --1.3 Codi encarregat de carregar aquest fitxer
 
-DELIMITER &&
+--Nosaltres hem decidit modificar el proces de carrga de dades peer incloure el nom del archiu 
+DELIMITER $$
 
-DROP EVENT IF EXISTS ImportarDades &&
+CREATE PROCEDURE CarregarDades(IN nom_fitxer_actual VARCHAR(255))
+BEGIN
+    
+    LOAD DATA INFILE nom_fitxer_actual
+    INTO TABLE CarregarLogs
+    FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+    LINES TERMINATED BY '\n'
+    (Fecha, Hora, Sistema, Origen, Mensaje)
+    SET nom_fitxer = nom_fitxer_actual;  
+END$$
 
+DELIMITER ;
+
+DELIMITER $$
+
+
+--Seguidament crear el event cada dia 
 CREATE EVENT IF NOT EXISTS ImportarDades
 ON SCHEDULE EVERY 1 DAY 
 STARTS '2024-04-08 23:59:59'
 DO
     BEGIN
-        SET @file_path = CONCAT('/home/elon/syslog_', YEAR(NOW()), '-', LPAD(MONTH(NOW()), 2, '0'), '-', LPAD(DAY(NOW()), 2, '0'));
-        SET @load_query = CONCAT('LOAD DATA INFILE ', QUOTE(@file_path), ' INTO TABLE CarregarLogs FIELDS TERMINATED BY ";" ENCLOSED BY \'""\' LINES TERMINATED BY "\n";');
-        PREPARE stmt FROM @load_query;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt;
-    END &&
+        SET @ruta_arxiu = CONCAT('/home/elon/syslog_', DATE_FORMAT(NOW(), '%Y-%m-%d'));
+        CALL CarregarDades(@ruta_arxiu);
+    END $$
 
 DELIMITER ;
 
+
 -- Opcional automatitzar amb cron (PAS 5 ) pero a la secció d'events en aquesta carpeta podem trobar el event corresponent 
---El script seria el següent 
+--El script corresponent seria el següent tambè està en el fitxer anomenat Script.sh
 
 #!/bin/bash
 
 # Definir la ruta del fitxer syslog
 file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
 
-# Comanda per carregar el fitxer syslog a la base de dades
+# Amb això carreguem el fitxer syslog a la base de dades
 -- mysql -u elon -elon nom_practica -e "LOAD DATA INFILE '${file_path}' INTO TABLE CarregarLogs FIELDS TERMINATED BY ';' ENCLOSED BY '\"' LINES TERMINATED BY '\n';"
 
 # en el crontab -e posarem la seguent linea al final del arziu
@@ -76,7 +108,7 @@ file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
 CREATE TABLE IF NOT EXISTS RegistreFitxers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom_fitxer VARCHAR(255),
-    data_càrrega DATETIME
+    data_carrega DATETIME
 );
 
 -- Taula per al registre del nombre de files inserides per cada fitxer
@@ -84,14 +116,17 @@ CREATE TABLE IF NOT EXISTS NombreFilesInserides (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nom_fitxer VARCHAR(255),
     num_files_inserides INT,
-    data_càrrega DATETIME
+    data_carrega DATETIME
 );
 
 
 -- 2.2 Procés de tractament dels fitxers syslog 
 
 -- Obtenció del fitxer del dia anterior
-SET @fitxer_dia_anterior = CONCAT('/home/elon/syslog_', YEAR(NOW() - INTERVAL 1 DAY), '-', LPAD(MONTH(NOW() - INTERVAL 1 DAY), 2, '0'), '-', LPAD(DAY(NOW() - INTERVAL 1 DAY), 2, '0'));
+
+SET @dia_semana = DAYOFWEEK(NOW()) - 2; -- Restem 2 per a   que el dilluns sigui 0, dimarts 1, etc.
+-- DAYOFWEEK el q fa  retorna valors de 1 a 7, on el diumenge és 1 i el dissabte és 7. Per tant, si volem obtenir el dia anterior, hem de fer que el dilluns sigui 0, el dimarts 1 i així successivamet, per poder restar el nombre de dies adequat i obenir el dia anterior.
+SET @fitxer_dia_anterior = CONCAT('/home/elon/syslog_', DATE_FORMAT(NOW() - INTERVAL @dia_semana DAY, '%Y-%m-%d'));
 
 -- Inserció del registre del fitxer carregat cada dia
 INSERT INTO RegistreFitxers (nom_fitxer, data_càrrega) VALUES (@fitxer_dia_anterior, NOW());
@@ -107,9 +142,17 @@ ADD COLUMN es_cap_de_setmana BOOLEAN;
 -- Actualitzar els valors de la columna "es_cap_de_setmana"
 UPDATE CarregarLogs SET es_cap_de_setmana = 
 CASE  
-    WHEN DAYOFWEEK(Fecha) IN (1,7)
-    THEN TRUE
+    WHEN DAYOFWEEK(Fecha) IN (1,7)  -- el 1 es  diumenge i el 7 és dissabte 
+    THEN TRUE --true si es cap de setmana 
     ELSE FALSE END;
+
+
+
+
+
+
+
+
 
 --PAS 4  Creació de la taula Màster dels processos
 
@@ -129,14 +172,9 @@ CREATE TABLE IF NOT EXISTS MasterTable (
 -- Afegir una columna per fer referència a la taula màster dels processos
 ALTER TABLE CarregarLogs
 ADD COLUMN ProcessId INT,
-ADD CONSTRAINT fk_process_id FOREIGN KEY (ProcessId) REFERENCES MasterProcess(Id);
+ADD CONSTRAINT fk_process_id FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id);
 
--- Inserció de dades a la taula màster dels processos
 
--- Exemple d'inserció de dades a la taula màster dels processos
-INSERT INTO MasterProcess (NomProcés, Descripció) VALUES
-    ('Systemd[1]', 'systemd is a system and service manager'),
-    ('rsyslogd', 'The rsyslog daemon is an enhanced syslogd');
 
 
 
@@ -146,34 +184,60 @@ DELIMITER $$
 
 CREATE PROCEDURE MantenimentTaulaMasterProcess()
 BEGIN
+    DECLARE error_message VARCHAR(255);
+
     -- Afegir nous processos que no estiguin a la taula màster
-    INSERT INTO MasterProcess (NomProcés, Descripció)
-    SELECT DISTINCT LOWER(NomProcés), Descripció
+    INSERT INTO MasterTable (NomProces, Descripcio)
+    SELECT DISTINCT LOWER(NomProcés), Descripcio
     FROM CarregarLogs
-    WHERE NomProcés NOT IN (SELECT NomProcés FROM MasterProcess);
+    WHERE NomProcés NOT IN (SELECT NomProces FROM MasterTable);
 
-    -- Validar que el NomProcés i la Descripció no siguin nuls
-    UPDATE MasterProcess
-    SET NomProcés = IFNULL(NomProcés, CONCAT('Valor_Null_', Id)),
-        Descripció = IFNULL(Descripció, CONCAT('Valor_Null_', Id))
-    WHERE NomProcés IS NULL OR Descripció IS NULL;
+    -- Validar que el NomProces i la Descripcio no siguin nuls
+    UPDATE MasterTable
+    SET NomProces = IFNULL(NomProces, CONCAT('Valor_Null_', Id)),
+        Descripcio = IFNULL(Descripcio, CONCAT('Valor_Null_', Id))
+    WHERE NomProces IS NULL OR Descripcio IS NULL;
 
-    -- Validar que el NomProcés sempre estigui en minúscules
-    UPDATE MasterProcess
-    SET NomProcés = LOWER(NomProcés)
-    WHERE NomProcés <> LOWER(NomProcés);
+    -- Validar que el NomProces sempre estigui en minúscules
+    UPDATE MasterTable
+    SET NomProces = LOWER(NomProces)
+    WHERE NomProces <> LOWER(NomProces);
 
-    -- Mostrar missatges de correcció
-    SELECT 'S\'han afegit nous processos a la taula màster.',
-           'S\'han corregit els processos amb noms en majúscules.',
-           'S\'han corregit les dades nules en la taula màster.';'
+    -- Comprovar si hi ha hagut canvis i mostrar missatges d'error
+    SELECT 'S\'han afegit nous processos a la taula màster.' INTO error_message
+    WHERE ROW_COUNT() > 0;
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'No s\'han afegit nous processos a la taula màster.' INTO error_message;
+    END IF;
+    
+    SELECT 'S\'han corregit els processos amb noms en majúscules.' INTO error_message
+    WHERE ROW_COUNT() > 0;
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'No s\'han corregit els processos amb noms en majúscules.' INTO error_message;
+    END IF;
+
+    SELECT 'S\'han corregit les dades nules en la taula màster.' INTO error_message
+    WHERE ROW_COUNT() > 0;
+    IF ROW_COUNT() = 0 THEN
+        SELECT 'No s\'han corregit les dades nules en la taula màster.' INTO error_message;
+    END IF;
+
+    SELECT error_message;
 END $$
 
 DELIMITER ;
 
 
--- PAS 9: Pas 8: Nous usuaris
+--explicació del procediment:
+/*
+El procediment que hem creat s'encarrega de mantenir la coherència de la taula MasterTable que emmagatzema informació sobre els processos dels quals tenim logs. Primer, comprovem si hi ha nous processos a partir dels logs carregats a la taula CarregarLogs. Si trobem nous processos, els afegim a la taula MasterTable.
 
-CREATE USER 'usuari1'@'localhost' IDENTIFIED BY '71420';
-GRANT SELECT ON DBPractica.* TO 'usuari1'@'localhost';
+Seguidament, validem les dades existents a la taula MasterTable. Verifiquem que cap dels camps NomProces i Descripcio estiguen buits. Si trobem camps buits, els substituïm per una cadena que indica que el valor era nul. També ens assegurem que els noms dels processos sempre estiguen en minúscules. Si trobem processos amb noms en majúscules, els convertim a minúscules.
+
+Després de realitzar aquestes comprovacions i correccions, revisem si s'han produït canvis i, en cas afirmatiu, mostrem els missatges corresponents indicant quines operacions s'han realitzat amb èxit. Si no s'han produït canvis, mostrem missatges indicant que no s'ha realitzat cap acció.
+
+*/
+
+
+
 

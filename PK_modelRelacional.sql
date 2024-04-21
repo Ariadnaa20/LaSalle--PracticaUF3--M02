@@ -10,9 +10,13 @@ CREATE TABLE CarregarLogs (
     Mensaje VARCHAR(255),
     ProcessId INT,
     es_cap_de_setmana BOOLEAN,
+    nom_fitxer VARCHAR(255),  
     PRIMARY KEY (id),
-    FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id)
+    FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id),
+    FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
+    FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer)
 );
+
 
 -- Creación de la tabla RegistreFitxers
 CREATE TABLE RegistreFitxers (
@@ -51,12 +55,6 @@ CREATE TABLE ControlCanvis (
 );
 
 
-
--- Afegir FK'S a la taula de CarregarLogs
-
-ALTER TABLE CarregarLogs ADD CONSTRAINT fk_registre_fitxers_nom_fitxer FOREIGN KEY (nom_fitxer) REFERENCES RegistreFitxers(nom_fitxer),
-ADD CONSTRAINT fk_nombre_files_inserides_nom_fitxer FOREIGN KEY (nom_fitxer) REFERENCES NombreFilesInserides(nom_fitxer), 
-ADD CONSTRAINT fk_master_table_process_id FOREIGN KEY (ProcessId) REFERENCES MasterTable(Id);
 
 
 
