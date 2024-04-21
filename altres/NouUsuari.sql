@@ -7,5 +7,4 @@ GRANT SELECT ON DBPractica.* TO 'PolAriXavi'@'localhost';
 
 --es només lectura perque perque li esrtem dient select
 
---Guillem tens una captura del script al pdf :)
 

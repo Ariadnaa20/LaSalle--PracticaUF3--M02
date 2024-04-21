@@ -14,7 +14,8 @@ BEGIN
 END;
 
 
---Taula cintrol
+
+--Taula control
 CREATE TABLE IF NOT EXISTS ControlCanvis (
     id INT AUTO_INCREMENT PRIMARY KEY,
     valor_vell TEXT,

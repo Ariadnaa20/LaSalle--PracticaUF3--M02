@@ -9,13 +9,13 @@ file_path="/home/elon/syslog_$(date +'%Y-%m-%d')"
 echo "Iniciant càrrega de dades des de l'arxiu: $file_path"
 
 # Connectem a la base de dades i executem la càrrega de dades
-mysql -u el_teub_usuari -pcontrasenya -e "USE DBPractica; LOAD DATA INFILE '$file_path' INTO TABLE CarregarLogs FIELDS TERMINATED BY ';' ENCLOSED BY '\"' LINES TERMINATED BY '\n';"
+mysql -u elon elon -e "USE DBPractica; LOAD DATA INFILE '$file_path' INTO TABLE CarregarLogs FIELDS TERMINATED BY ';' ENCLOSED BY '\"' LINES TERMINATED BY '\n';"
 
 # Mostrem un missatge indicant que la càrrega ha finalitzat
 echo "La càrrega de dades ha finalitzat"
 
 
-
+¡
 #La sentència al cron seria aixi 
 0 1 * * * /home/elon/scriptBD.sh
 

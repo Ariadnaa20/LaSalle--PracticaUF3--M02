@@ -25,7 +25,7 @@ CREATE TABLE RegistreFitxers (
     id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
     data_carrega DATETIME,
-    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
+    PRIMARY KEY (nom_fitxer)  -- Definint nom fitxer com a clau primaria
 );
 
 -- Creación de la tabla NombreFilesInserides
@@ -34,7 +34,7 @@ CREATE TABLE NombreFilesInserides (
     nom_fitxer VARCHAR(255),
     num_files_inserides INT,
     data_carrega DATETIME,
-    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
+    PRIMARY KEY (nom_fitxer)  
 );
 
 CREATE TABLE MasterTable (

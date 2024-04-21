@@ -109,7 +109,7 @@ CREATE TABLE RegistreFitxers (
     id INT AUTO_INCREMENT,
     nom_fitxer VARCHAR(255),
     data_carrega DATETIME,
-    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
+    PRIMARY KEY (nom_fitxer)  --Definint nom_fitxer com la clau primaria
 );
 
 -- Creación de la tabla NombreFilesInserides
@@ -118,7 +118,7 @@ CREATE TABLE NombreFilesInserides (
     nom_fitxer VARCHAR(255),
     num_files_inserides INT,
     data_carrega DATETIME,
-    PRIMARY KEY (nom_fitxer)  -- Definiendo nom_fitxer como la clave primaria
+    PRIMARY KEY (nom_fitxer)  
 );
 
 
@@ -147,12 +147,6 @@ CASE
     WHEN DAYOFWEEK(Fecha) IN (1,7)  -- el 1 es  diumenge i el 7 és dissabte 
     THEN TRUE --true si es cap de setmana 
     ELSE FALSE END;
-
-
-
-
-
-
 
 
 
@@ -190,7 +184,7 @@ BEGIN
 
     -- Afegir nous processos que no estiguin a la taula màster
     INSERT INTO MasterTable (NomProces, Descripcio)
-    SELECT DISTINCT LOWER(NomProcés), Descripcio
+    SELECT DISTINCT LOWER(NomProces), Descripcio
     FROM CarregarLogs
     WHERE NomProcés NOT IN (SELECT NomProces FROM MasterTable);
 

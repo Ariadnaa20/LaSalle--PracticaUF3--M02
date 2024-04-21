@@ -4,7 +4,6 @@ SET GLOBAL event_scheduler = ON;
 
 
 --Event PAS1_3  
-DELIMITER $$
 
 DELIMITER &&
 
